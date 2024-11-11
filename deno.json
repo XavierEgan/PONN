@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "mathjs": "npm:mathjs@^13.2.0"
+  }
+}

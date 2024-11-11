@@ -51,7 +51,7 @@ export class Layer {
         
         // set the activation function
         this.which_activation_function = which_activation_function;
-        this.activation_function = this.set_activation_function(which_activation_function)
+        this.activation_function = this.set_activation_function(which_activation_function);
     }
 
     forward(input: mathjs.Matrix): mathjs.Matrix {
@@ -62,10 +62,11 @@ export class Layer {
 
         // calculation is weights * input + biases then everything is run through the function
         let result: mathjs.Matrix = mathjs.multiply(this.weights, input);
+
         result = mathjs.add(result, this.biases);
 
         // apply the activation function
-        result = result.map(this.activation_function)
+        result = result.map(this.activation_function);
         
         // return the result
         return result;
@@ -75,7 +76,11 @@ export class Layer {
         // set the activation function to a function
         // act_func = (value) => value is shorthand for making a new funciton
         if (which_activation_function == ActivationFunction.INPUT_LAYER) {
-            return () => 0;
+            return () => {
+                throw new Error("Input layer activation function should never be called.");
+                // deno-lint-ignore no-unreachable
+                return 0;
+            };
         }
         else if (which_activation_function == ActivationFunction.LINEAR) {
             return (value: number) => value;
