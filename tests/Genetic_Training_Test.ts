@@ -73,7 +73,8 @@ function test1() {
             [1, ActivationFunction.INPUT_LAYER],
             [2, ActivationFunction.LINEAR],
             [1, ActivationFunction.LINEAR]
-        ]
+        ],
+        -2, 2
     )
 
     // Track best fitness over time
@@ -152,13 +153,12 @@ function test2() {
         x: x,
         y: Math.sin(x) + (mathjs.random(-1, 1))
     }));
-;
 
     const start = performance.now();
-    const runs = 200;
+    const runs = 2000;
     const generation_size = 100;
     let learning_rate = 0.9;
-    const learning_decay_rate = 0.995;
+    const learning_decay_rate = 0.999;
     const mutation_count = 3;
     const prob_of_mutation = 0.8;
     const survivor_percent = 0.1;
@@ -169,13 +169,18 @@ function test2() {
         [
             [1, ActivationFunction.INPUT_LAYER],
             [2, ActivationFunction.RELU],
+            [4, ActivationFunction.RELU],
+            [2, ActivationFunction.RELU],
             [1, ActivationFunction.LINEAR]
-        ]
+        ],
+        -1,
+        1
     )
 
     // Track best fitness over time
     let best_overall_fitness = -Infinity;
     let generations_without_improvement = 0;
+
 
     for (let i = 0; i < runs; i++) {
         const fitness: Array<number> = Array.from({ length: generation_size }, () => 0);
@@ -191,6 +196,12 @@ function test2() {
             for (let k = 0; k < generation_size; k++) {
                 const error = dataset[j].y - evals[k][0][0]; // [network][node][just 0 becasue its a colum vector]
                 fitness[k] -= error * error;
+
+                // make sure it doesnt abuse RELU to just output the same thing
+                if (k == fitness.length-1) {break} // make sure we dont go over the 
+                if (fitness[k] == fitness[k+1]) {
+                    fitness[k] -= 1_000;
+                }
             }
         }
 

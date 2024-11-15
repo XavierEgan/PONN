@@ -27,7 +27,7 @@ export class Network {
         this.layer_mask = new Array<[number, number]>();
     }
 
-    randomise_weights(layer_mask: Array<[number, number]>) {
+    randomise_weights(layer_mask: Array<[number, number]>, min: number, max: number) {
         if (layer_mask.length == 0) {
             throw new Error(`layer mask is not defined, got ${layer_mask}`)
         }
@@ -41,8 +41,8 @@ export class Network {
             const input_size = this.layer_mask[i - 1][0];
 
             // wth was i doing before this is so much easier
-            const randomised_weights: mathjs.Matrix = mathjs.matrix(mathjs.random([output_size, input_size], -10, 10));
-            const randomised_biases: mathjs.Matrix = mathjs.matrix(mathjs.random([output_size, 1], -10, 10));
+            const randomised_weights: mathjs.Matrix = mathjs.matrix(mathjs.random([output_size, input_size], min, max));
+            const randomised_biases: mathjs.Matrix = mathjs.matrix(mathjs.random([output_size, 1], min, max));
 
             this.layers.push(new Layer(randomised_weights, randomised_biases, layer_mask[i][1]));
         }

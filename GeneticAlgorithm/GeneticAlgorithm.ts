@@ -14,14 +14,14 @@ export class GeneticAlgorithm {
         this.generation_size = generation_size;
     }
 
-    randomise_networks(layer_mask: Array<[number, number]>) {
+    randomise_networks(layer_mask: Array<[number, number]>, min: number, max: number) {
         /*
         initialize the generation by randomising all the networks
         */
         // randomise the networks
         for (let i = 0; i < this.generation_size; i++) {
             const network = new Network();
-            network.randomise_weights(layer_mask)
+            network.randomise_weights(layer_mask, min, max)
             this.generation.push(network);
         }
     }
