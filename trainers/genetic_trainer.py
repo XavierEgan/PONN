@@ -1,10 +1,11 @@
 import numpy as np
-from ..utils.Nework import Network
+from ..utils.Network import Network
 from ..utils.Activation_Function import Activation_Function
 
 class Genetic_Trainer:
-    def __init__(self, generation_size:int, network_shape:list[list[int, ]], min:float, max:float):
-        self.models:list[Network]
+    def __init__(self, generation_size:int, network_shape:list[list[int, Activation_Function]], min:float = -1, max:float = 1):
+        self.models:list[dict[str, Network | float]] = []
+        self.network_shape:list[list[int, Activation_Function]] = network_shape
 
         for i in range(generation_size):
             self.models.append(
@@ -13,10 +14,14 @@ class Genetic_Trainer:
                     "fitness" : 0
                 }
             )
-            self.models[i]["model"].randomize_layers(min, max)
+            self.models[i]["model"].randomize_params(min, max)
         
-        this_gen_data = []
-        overall_data = []
+        self.this_gen_data = {
+            "best" : 0,
+            "mean" : 0
+        }
+
+        self.rand:np.random = np.random.default_rng()
     
     def get_model_evals(self, inputs:list[np.matrix]) -> list[np.matrix]:
         if len(inputs) != len(self.models):
@@ -25,22 +30,44 @@ class Genetic_Trainer:
         evals:list[np.matrix] = []
 
         for i in range(len(inputs)):
-            evals.append(self.models[i]["model"].forward(inputs[i]))
+            model = self.models[i]["model"]
+
+            evals.append(model.forward(inputs[i]))
         
         return evals
     
-    def put_fitness(self, fitness:list[float], track_metrics = True) -> None | dict:
+    def put_fitness(self, fitness:list[float], learning_rate:float = .01, scale:float = 1, survivor_proportion = .5, track_metrics = True) -> None | dict:
         if len(fitness) != len(self.models):
             raise ValueError("fitness is not the right size")
 
         for i in range(len(fitness)):
             self.models[i]["fitness"] = fitness[i]
 
-        new_model_list = [{self.models[x]["fitness"] : {"model" : self.models[x]["model"], "index" : }} for x in range(len(self.models))]
-
-
-            
+        self.models = sorted(self.models, key=lambda x: x["fitness"], reverse=True)
         
+        self.this_gen_data["best"] = self.models[0]["fitness"]
+        self.this_gen_data["mean"] = sum(x["fitness"] for x in self.models) / len(self.models)
 
+        models_keep = int(len(self.models) * survivor_proportion)
+        models_remove = len(self.models) - models_keep
 
+        self.models = self.models[0:models_keep]
+
+        for i in range(models_remove):
+            self.models.append({"model" : self.mutate(self.models[i % models_keep]["model"].clone(), learning_rate, scale), "fitness":0})
         
+        return self.this_gen_data
+        
+    def mutate(self, model:Network, learning_rate:float, scale:float) -> Network:
+        num_weights = sum([self.network_shape[x][0] * self.network_shape[x+1][0] for x in range(len(self.network_shape)-1)])
+        num_biases = sum([x[0] for x in self.network_shape])
+        num_params = num_weights + num_biases
+
+        for layer in range(len(model.weights)):
+            for weight_x in range(model.weights[layer].shape[0]):
+                for weight_y in range(model.weights[layer].shape[1]):
+                    if self.rand.random() < learning_rate:
+                        model.weights[layer][weight_x, weight_y] += ((2 * self.rand.random()) - 1) * scale
+        
+        return model
+    

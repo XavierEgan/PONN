@@ -1,5 +1,5 @@
 import numpy as np
-from ..utils.Nework import Network
+from ..utils.Network import Network
 from ..utils.Activation_Function import Activation_Function
 from ..utils.Loss_Function import Loss_Function
 
