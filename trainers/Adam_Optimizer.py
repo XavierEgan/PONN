@@ -128,4 +128,21 @@ class Adam_Optimizer:
 
     def backpropogate(self, loss:Loss_Function) -> list[list[np.matrix]]:
         #TODO: impliment this
-        # 
+        # we need to calc ∂L/∂pij
+        # where ∂L/∂pij is the change in the loss function with respect to the given param
+        # ∂L/∂pij = ∂L/∂y * ∂y/∂z * ∂z/∂wij
+        
+
+        # (this layer refers to the nodes and the weights to the left of it)
+        # (activations refers to the result from the loss function ran backwards through the network)
+        # ∂L/∂pij = L'(yi) * A'(zi) * yi
+        # where:
+        # L' = derivative of loss
+        # A' = derivative of activation
+        # y = activations from this layer
+
+        weight_derivatives = []
+        bias_derivatives = []
+
+        for layer in range(len(self.network.network_shape)-1, -1, -1):
+            pass
